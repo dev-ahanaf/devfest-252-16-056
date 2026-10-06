@@ -220,7 +220,7 @@
         </section>
 
         <!-- Tender Information Card -->
-        <section class="card tender-info-card">
+        <section class="card tender-info-card" id="sectionTenderDetails">
           <div class="card-header-row">
             <div class="card-title-flex">
               <div class="card-title-icon">
@@ -279,7 +279,7 @@
         <!-- Two Column Workspace: Uploaded Files + Required Documents -->
         <section class="workspace-columns">
           <!-- Column 1: Uploaded Documents -->
-          <div class="card table-panel">
+          <div class="card table-panel" id="sectionUploadDocs">
             <div class="panel-header">
               <div class="panel-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -292,39 +292,39 @@
               <div class="panel-actions">
                 <button class="btn-sm-primary" id="btnTriggerUpload">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                  <span data-i18n="uploadedDocs.uploadBtn">+ Upload PDFs</span>
-                </button>
-                <button class="btn-sm-outline" id="btnClearFiles" data-i18n="uploadedDocs.clearAll">Clear All</button>
-              </div>
-            </div>
-
-            <!-- Uploaded Files Table -->
-            <div style="overflow-x: auto; flex: 1;">
-              <table class="custom-table" id="uploadedFilesTable">
-                <thead>
-                  <tr>
-                    <th data-i18n="uploadedDocs.fileName">File Name</th>
-                    <th data-i18n="uploadedDocs.pages">Pages</th>
-                    <th data-i18n="uploadedDocs.size">Size</th>
-                    <th data-i18n="uploadedDocs.duplicate">Duplicate</th>
-                    <th data-i18n="uploadedDocs.actions">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="uploadedFilesBody">
-                  <!-- Dynamically Rendered -->
-                </tbody>
-              </table>
-              <div id="noFilesMsg" style="padding: 30px; text-align: center; color: var(--text-muted); font-size: 13px;">
-                No PDF files uploaded yet. Drag and drop or click '+ Upload PDFs'.
-              </div>
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span data-i18n="uploadedDocs.uploadBtn">+ Upload PDFs</span>
+              </button>
+              <button class="btn-sm-outline" id="btnClearFiles" data-i18n="uploadedDocs.clearAll">Clear All</button>
             </div>
           </div>
 
-          <!-- Column 2: Required Documents -->
-          <div class="card table-panel">
+          <!-- Uploaded Files Table -->
+          <div style="overflow-x: auto; flex: 1;">
+            <table class="custom-table" id="uploadedFilesTable">
+              <thead>
+                <tr>
+                  <th data-i18n="uploadedDocs.fileName">File Name</th>
+                  <th data-i18n="uploadedDocs.pages">Pages</th>
+                  <th data-i18n="uploadedDocs.size">Size</th>
+                  <th data-i18n="uploadedDocs.duplicate">Duplicate</th>
+                  <th data-i18n="uploadedDocs.actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="uploadedFilesBody">
+                <!-- Dynamically Rendered -->
+              </tbody>
+            </table>
+            <div id="noFilesMsg" style="padding: 30px; text-align: center; color: var(--text-muted); font-size: 13px;">
+              No PDF files uploaded yet. Drag and drop or click '+ Upload PDFs'.
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Required Documents -->
+        <div class="card table-panel" id="sectionMatchCheck">
             <div class="panel-header">
               <div class="panel-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -371,7 +371,7 @@
     <!-- 3. RIGHT SIDEBAR: LIVE PREVIEW & READINESS -->
     <aside class="right-sidebar">
       <!-- Live Preview Header -->
-      <div>
+      <div id="sectionPreview">
         <div class="section-head">
           <h3>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -421,7 +421,7 @@
       </div>
 
       <!-- Package Readiness Card -->
-      <div class="readiness-card">
+      <div class="readiness-card" id="sectionGenerate">
         <div class="gauge-flex">
           <div class="donut-gauge" id="donutGauge" style="--percent: 0;">
             <div class="donut-inner" id="donutPercentText">0%</div>

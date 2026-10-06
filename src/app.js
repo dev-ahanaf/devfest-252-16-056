@@ -20,7 +20,8 @@ const state = {
   blockingReasons: [],
   generatedBlob: null,
   includeIndexPage: false,
-  sealImageBuffer: null
+  sealImageBuffer: null,
+  previewCurrentPage: 1
 };
 
 // DOM Elements
@@ -226,8 +227,15 @@ async function handleFilesUpload(fileList) {
   const files = Array.from(fileList);
   const t = translations[state.lang];
 
+  const currentTotalSize = state.uploadedFiles.reduce((acc, f) => acc + f.size, 0);
+  const incomingTotalSize = files.reduce((acc, f) => acc + f.size, 0);
+
   if (state.uploadedFiles.length + files.length > 30) {
     alert(t.messages.maxFilesExceeded);
+    return;
+  }
+  if (currentTotalSize + incomingTotalSize > 50 * 1024 * 1024) {
+    alert(state.lang === 'bn' ? "সর্বোচ্চ ৫০ মেগাবাইট ফাইল আপলোড করা যাবে।" : "Maximum 50 MB total file size allowed.");
     return;
   }
 
@@ -349,6 +357,24 @@ function recalculateStatuses() {
 
     state.statuses[req.id] = status;
   });
+
+  // Check for duplicate file content matched across different documents (Problem Statement §5.6)
+  const usedHashes = new Map();
+  state.requirements.forEach(r => {
+    const fid = state.matches[r.id];
+    if (fid) {
+      const f = state.uploadedFiles.find(x => x.id === fid);
+      if (f) {
+        const thisDocTitle = state.lang === 'bn' ? (r.title_bn || r.title_en) : (r.title_en || r.title_bn);
+        if (usedHashes.has(f.sha256)) {
+          const otherDocTitle = usedHashes.get(f.sha256);
+          state.blockingReasons.push(`${thisDocTitle}: Duplicate file content detected (shares identical content with '${otherDocTitle}').`);
+        } else {
+          usedHashes.set(f.sha256, thisDocTitle);
+        }
+      }
+    }
+  });
 }
 
 // -------------------------------------------------------------
@@ -435,13 +461,19 @@ function renderRequiredDocs() {
     }
 
     // Build File Select Options (Enforce 1 file per doc, 1 doc per file, no duplicate file across docs)
+    const otherAssignments = Object.entries(state.matches).filter(([dId]) => dId !== req.id);
+    const assignedFileIds = otherAssignments.map(([_, fId]) => fId);
+    const assignedHashes = otherAssignments
+      .map(([_, fId]) => state.uploadedFiles.find(f => f.id === fId)?.sha256)
+      .filter(Boolean);
+
     let optionsHtml = `<option value="">${t.requiredDocs.selectFile}</option>`;
     state.uploadedFiles.forEach(f => {
-      // Allow if it's currently selected for this doc OR not assigned to any other doc
       const isCurrentSelection = (f.id === matchedFileId);
       const isAssignedElsewhere = assignedFileIds.includes(f.id) && !isCurrentSelection;
+      const isHashAssignedElsewhere = assignedHashes.includes(f.sha256) && !isCurrentSelection;
 
-      if (!isAssignedElsewhere) {
+      if (!isAssignedElsewhere && !isHashAssignedElsewhere) {
         optionsHtml += `<option value="${f.id}" ${isCurrentSelection ? 'selected' : ''}>${f.name}</option>`;
       }
     });
@@ -454,12 +486,15 @@ function renderRequiredDocs() {
       ? `<input type="date" class="date-input doc-expiry-input" data-doc="${req.id}" value="${expiryVal}" ${!matchedFileId ? 'disabled' : ''}>`
       : `<span style="color: var(--text-light); text-align: center; display: block;">—</span>`;
 
+    const primaryTitle = state.lang === 'bn' ? (req.title_bn || req.title_en) : (req.title_en || req.title_bn);
+    const secondaryTitle = state.lang === 'bn' ? (req.title_en || '') : (req.title_bn || '');
+
     tr.innerHTML = `
       <td><strong>${req.order}</strong></td>
       <td>
         <div class="doc-title-cell">
-          <span class="doc-en">${req.title_en || 'Document'}</span>
-          <span class="doc-bn">(${req.title_bn || ''})</span>
+          <span class="doc-en">${primaryTitle || 'Document'}</span>
+          ${secondaryTitle ? `<span class="doc-bn">(${secondaryTitle})</span>` : ''}
         </div>
       </td>
       <td>
@@ -566,20 +601,24 @@ function updateReadinessAndPreview() {
 
   if (isBlocked) {
     elements.btnGeneratePackage.className = 'btn-generate-package disabled';
+    elements.btnHeaderDownload.classList.add('disabled');
+    elements.btnHeaderDownload.title = state.blockingReasons.join('\n');
     elements.generateHelperText.textContent = t.readiness.fixIssues;
     elements.blockingBox.style.display = 'block';
     elements.blockingReasonsList.innerHTML = state.blockingReasons.map(r => `<li>${r}</li>`).join('');
   } else {
     elements.btnGeneratePackage.className = 'btn-generate-package enabled';
+    elements.btnHeaderDownload.classList.remove('disabled');
+    elements.btnHeaderDownload.title = '';
     elements.generateHelperText.textContent = t.readiness.allPassed;
     elements.blockingBox.style.display = 'none';
   }
 
-  // Update Live Preview Cover Information
-  updateLivePreviewCover();
+  // Update Live Preview Cover and Pages
+  updateLivePreview();
 }
 
-function updateLivePreviewCover() {
+function updateLivePreview() {
   const sortedIncluded = [...state.requirements]
     .sort((a, b) => a.order - b.order)
     .filter(req => Boolean(state.matches[req.id]));
@@ -587,24 +626,139 @@ function updateLivePreviewCover() {
   let totalPages = 1; // Cover page is 1
   if (state.includeIndexPage) totalPages += 1;
 
-  let listHtml = '';
   sortedIncluded.forEach(req => {
     const f = state.uploadedFiles.find(file => file.id === state.matches[req.id]);
     const pCount = f ? f.pageCount : 1;
     totalPages += pCount;
-
-    listHtml += `
-      <div style="display: flex; justify-content: space-between; border-bottom: 0.5px dashed #e2e8f0; padding: 1px 0;">
-        <span>${req.order}. ${req.title_en}</span>
-        <span style="color: #64748b;">${pCount}p</span>
-      </div>
-    `;
   });
 
-  elements.prevIncludedDocsList.innerHTML = listHtml || '<div style="color: #94a3b8; font-style: italic;">No documents matched yet</div>';
-  elements.previewPageIndicator.textContent = `Page 1 of ${totalPages}`;
-  elements.prevFooterText.textContent = `${state.tender.tender_id || 'TENDER'} | Page 1 of ${totalPages}`;
-  elements.previewNavPageNum.textContent = `1 / ${totalPages}`;
+  if (state.previewCurrentPage > totalPages) {
+    state.previewCurrentPage = Math.max(1, totalPages);
+  }
+  if (state.previewCurrentPage < 1) {
+    state.previewCurrentPage = 1;
+  }
+
+  elements.previewPageIndicator.textContent = `Page ${state.previewCurrentPage} of ${totalPages}`;
+  elements.previewNavPageNum.textContent = `${state.previewCurrentPage} / ${totalPages}`;
+  elements.btnPrevPage.disabled = state.previewCurrentPage <= 1;
+  elements.btnNextPage.disabled = state.previewCurrentPage >= totalPages;
+
+  const previewFrame = elements.previewCoverSheet;
+
+  if (state.previewCurrentPage === 1) {
+    let listHtml = '';
+    sortedIncluded.forEach(req => {
+      const f = state.uploadedFiles.find(file => file.id === state.matches[req.id]);
+      const pCount = f ? f.pageCount : 1;
+      listHtml += `
+        <div style="display: flex; justify-content: space-between; border-bottom: 0.5px dashed #e2e8f0; padding: 1px 0;">
+          <span>${req.order}. ${req.title_en}</span>
+          <span style="color: #64748b;">${pCount}p</span>
+        </div>
+      `;
+    });
+
+    previewFrame.innerHTML = `
+      <div style="border-bottom: 2px solid #2563eb; padding-bottom: 5px;">
+        <div style="font-weight: 800; font-size: 8px; color: #1e3a8a; text-align: center;">TENDER DOCUMENT PACKAGE</div>
+        <div style="font-weight: 700; font-size: 9px; color: #2563eb; text-align: center; margin-top: 2px;">${state.tender.tender_id || 'N/A'}</div>
+        <div style="font-size: 6.5px; color: #64748b; text-align: center;">${state.tender.title || 'N/A'}</div>
+      </div>
+
+      <div style="margin-top: 6px; font-size: 6px; line-height: 1.4;">
+        <div><strong>Procuring Entity:</strong> <span>${state.tender.procuring_entity || 'N/A'}</span></div>
+        <div><strong>Bidder:</strong> <span>${state.tender.bidder || 'N/A'}</span></div>
+        <div><strong>Deadline:</strong> <span>${state.tender.submission_deadline || 'N/A'}</span></div>
+      </div>
+
+      <div style="margin-top: 6px; flex: 1; overflow-y: hidden;">
+        <div style="font-weight: 700; font-size: 6.5px; border-bottom: 0.5px solid #cbd5e1; padding-bottom: 2px;">Included Documents:</div>
+        <div style="margin-top: 3px; font-size: 5.5px; line-height: 1.5;">
+          ${listHtml || '<div style="color: #94a3b8; font-style: italic;">No documents matched yet</div>'}
+        </div>
+      </div>
+
+      <div style="border-top: 0.5px solid #cbd5e1; padding-top: 4px; font-size: 5.5px; text-align: center; color: #64748b;">
+        ${state.tender.tender_id || 'TENDER'} | Page 1 of ${totalPages}
+      </div>
+    `;
+  } else if (state.includeIndexPage && state.previewCurrentPage === 2) {
+    let indexRows = '';
+    let runPage = 3;
+    sortedIncluded.forEach(req => {
+      const f = state.uploadedFiles.find(file => file.id === state.matches[req.id]);
+      const pCount = f ? f.pageCount : 1;
+      const endP = runPage + pCount - 1;
+      indexRows += `
+        <div style="display: flex; justify-content: space-between; border-bottom: 0.5px dotted #cbd5e1; padding: 2px 0;">
+          <span>${req.order}. ${req.title_en}</span>
+          <span style="color: #2563eb;">p. ${runPage}${pCount > 1 ? `-${endP}` : ''}</span>
+        </div>
+      `;
+      runPage += pCount;
+    });
+
+    previewFrame.innerHTML = `
+      <div style="border-bottom: 2px solid #2563eb; padding-bottom: 5px;">
+        <div style="font-weight: 800; font-size: 8px; color: #1e3a8a; text-align: center;">TABLE OF CONTENTS</div>
+        <div style="font-size: 6.5px; color: #64748b; text-align: center;">Document Order & Page Index</div>
+      </div>
+
+      <div style="margin-top: 8px; flex: 1; font-size: 6px; line-height: 1.6;">
+        ${indexRows}
+      </div>
+
+      <div style="border-top: 0.5px solid #cbd5e1; padding-top: 4px; font-size: 5.5px; text-align: center; color: #64748b;">
+        ${state.tender.tender_id || 'TENDER'} | Page 2 of ${totalPages}
+      </div>
+    `;
+  } else {
+    let offset = 1 + (state.includeIndexPage ? 1 : 0);
+    let targetDoc = null;
+    let pageInDoc = 1;
+    let totalDocP = 1;
+    let matchedFile = null;
+
+    for (const req of sortedIncluded) {
+      const f = state.uploadedFiles.find(file => file.id === state.matches[req.id]);
+      const pCount = f ? f.pageCount : 1;
+      if (state.previewCurrentPage <= offset + pCount) {
+        targetDoc = req;
+        matchedFile = f;
+        pageInDoc = state.previewCurrentPage - offset;
+        totalDocP = pCount;
+        break;
+      }
+      offset += pCount;
+    }
+
+    if (targetDoc) {
+      previewFrame.innerHTML = `
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px; margin-bottom: 6px;">
+          <div style="font-weight: 700; font-size: 7.5px; color: #0f172a;">Doc #${targetDoc.order}: ${targetDoc.title_en}</div>
+          <div style="font-size: 6px; color: #64748b; margin-top: 2px;">File: ${matchedFile?.name || 'Attached PDF'}</div>
+          <div style="font-size: 5.5px; color: #059669; font-weight: 600; margin-top: 1px;">Page ${pageInDoc} of ${totalDocP}</div>
+        </div>
+
+        <div style="flex: 1; border: 0.5px solid #e2e8f0; border-radius: 3px; padding: 8px; background: #fafafa; display: flex; flex-direction: column; gap: 4px; opacity: 0.85;">
+          <div style="height: 4px; background: #cbd5e1; width: 85%; border-radius: 2px;"></div>
+          <div style="height: 3px; background: #e2e8f0; width: 95%; border-radius: 2px;"></div>
+          <div style="height: 3px; background: #e2e8f0; width: 75%; border-radius: 2px;"></div>
+          <div style="height: 3px; background: #e2e8f0; width: 90%; border-radius: 2px;"></div>
+          <div style="margin-top: 6px; height: 3px; background: #e2e8f0; width: 80%; border-radius: 2px;"></div>
+          <div style="height: 3px; background: #e2e8f0; width: 92%; border-radius: 2px;"></div>
+          <div style="margin-top: auto; font-size: 5.5px; color: #94a3b8; text-align: center; border-top: 0.5px dashed #e2e8f0; padding-top: 4px;">
+            ~36pt bottom margin allocated for footer
+          </div>
+        </div>
+
+        <div style="border-top: 0.5px solid #cbd5e1; padding-top: 4px; font-size: 5.5px; text-align: center; color: #64748b;">
+          ${state.tender.tender_id || 'TENDER'} | Page ${state.previewCurrentPage} of ${totalPages}
+        </div>
+      `;
+    }
+  }
 }
 
 // -------------------------------------------------------------
@@ -735,18 +889,49 @@ function setupEventListeners() {
     }
   });
 
-  // Drag and Drop
+  // Drag and Drop (handles both JSON and PDFs)
   elements.dropArea.addEventListener('dragover', (e) => {
     e.preventDefault();
     e.stopPropagation();
   });
-  elements.dropArea.addEventListener('drop', (e) => {
+  elements.dropArea.addEventListener('drop', async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFilesUpload(e.dataTransfer.files);
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      const jsonFile = droppedFiles.find(f => f.name.toLowerCase().endsWith('.json'));
+      const pdfFiles = droppedFiles.filter(f => !f.name.toLowerCase().endsWith('.json'));
+
+      if (jsonFile) {
+        try {
+          const text = await jsonFile.text();
+          const json = JSON.parse(text);
+          loadRequirementsData(json);
+        } catch (err) {
+          alert("Invalid requirements.json file: " + err.message);
+        }
+      }
+
+      if (pdfFiles.length > 0) {
+        handleFilesUpload(pdfFiles);
+      }
     }
   });
+
+  // Preview Navigation Buttons
+  elements.btnPrevPage.addEventListener('click', () => {
+    if (state.previewCurrentPage > 1) {
+      state.previewCurrentPage--;
+      updateLivePreview();
+    }
+  });
+  elements.btnNextPage.addEventListener('click', () => {
+    state.previewCurrentPage++;
+    updateLivePreview();
+  });
+
+  // Sidebar Steps Navigation
+  setupSidebarNavigation();
 
   // Clear all uploaded files
   elements.btnClearFiles.addEventListener('click', () => {
@@ -861,6 +1046,59 @@ function setupEventListeners() {
       alert("No saved progress found in LocalStorage.");
     }
   });
+}
+
+function setupSidebarNavigation() {
+  const stepItems = document.querySelectorAll('.sidebar .step-item');
+  const targetMap = {
+    '1': document.getElementById('sectionTenderDetails'),
+    '2': document.getElementById('sectionUploadDocs'),
+    '3': document.getElementById('sectionMatchCheck'),
+    '4': document.getElementById('sectionPreview'),
+    '5': document.getElementById('sectionGenerate')
+  };
+
+  stepItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const step = item.getAttribute('data-step');
+      const target = targetMap[step];
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        stepItems.forEach(si => si.classList.remove('active'));
+        item.classList.add('active');
+      }
+    });
+  });
+
+  const handleScrollSpy = () => {
+    const entries = [
+      { step: '1', el: document.getElementById('sectionTenderDetails') },
+      { step: '2', el: document.getElementById('sectionUploadDocs') },
+      { step: '3', el: document.getElementById('sectionMatchCheck') },
+      { step: '4', el: document.getElementById('sectionPreview') },
+      { step: '5', el: document.getElementById('sectionGenerate') }
+    ];
+
+    let currentStep = '1';
+    for (const item of entries) {
+      if (item.el) {
+        const rect = item.el.getBoundingClientRect();
+        if (rect.top <= 250) {
+          currentStep = item.step;
+        }
+      }
+    }
+
+    stepItems.forEach(si => {
+      si.classList.toggle('active', si.getAttribute('data-step') === currentStep);
+    });
+  };
+
+  window.addEventListener('scroll', handleScrollSpy, { passive: true });
+  const mainWrapper = document.querySelector('.main-wrapper');
+  if (mainWrapper) {
+    mainWrapper.addEventListener('scroll', handleScrollSpy, { passive: true });
+  }
 }
 
 // Start app
