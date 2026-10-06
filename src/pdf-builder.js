@@ -270,6 +270,28 @@ export async function buildTenderPackage({
     rowY -= 22;
   });
 
+  // Embed seal on cover page if provided
+  if (sealImageBuffer) {
+    try {
+      const sealImg = await mergedPdf.embedPng(sealImageBuffer);
+      coverPage.drawImage(sealImg, {
+        x: coverWidth - 150,
+        y: 45,
+        width: 100,
+        height: 40
+      });
+      coverPage.drawText("OFFICIAL SEAL / SIGNATURE", {
+        x: coverWidth - 150,
+        y: 35,
+        size: 7,
+        font: fontHelveticaBold,
+        color: rgb(0.2, 0.35, 0.6)
+      });
+    } catch {
+      // ignore
+    }
+  }
+
   // Cover Page Bottom Footer
   drawPageFooter(coverPage, tender.tender_id, currentPageNumber, totalPages, fontHelvetica, coverWidth);
   currentPageNumber++;

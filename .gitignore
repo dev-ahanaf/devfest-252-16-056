@@ -5,7 +5,7 @@ dist/
 .env
 .env.*
 .vercel
-Rules_Book/
-"Rules_Book /"
-"*.png"
+Rules_Book*/
+TenderDoc_Antigravity_Design_Pack/
+/*.png
 !screenshots/*.png
