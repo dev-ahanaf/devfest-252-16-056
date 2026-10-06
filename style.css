@@ -717,6 +717,9 @@ body.lang-bn {
   padding: 10px 12px;
   text-align: left;
   border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .custom-table td {

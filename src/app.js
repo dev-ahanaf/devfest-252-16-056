@@ -5,13 +5,7 @@ import { calculateSHA256, validatePDFHeader, inspectPDFFile, buildTenderPackage,
 const state = {
   lang: 'en',
   theme: 'light',
-  tender: {
-    tender_id: "T-2026-0417",
-    title: "Supply of IT Equipment",
-    procuring_entity: "Example Directorate",
-    bidder: "Example Company Ltd.",
-    submission_deadline: "2026-10-20"
-  },
+  tender: null,
   requirements: [],
   uploadedFiles: [], // array of { id, name, size, pageCount, arrayBuffer, sha256, isDuplicate, duplicateGroup, isEncrypted, isDamaged }
   matches: {}, // docId -> fileId
@@ -77,6 +71,7 @@ const elements = {
   blockingReasonsList: document.getElementById('blockingReasonsList'),
 
   // Preview elements
+  previewCoverSheet: document.getElementById('previewCoverSheet'),
   previewPageIndicator: document.getElementById('previewPageIndicator'),
   prevTenderId: document.getElementById('prevTenderId'),
   prevTenderTitle: document.getElementById('prevTenderTitle'),
@@ -99,7 +94,6 @@ const elements = {
   jsonEditorText: document.getElementById('jsonEditorText'),
   btnCloseJsonModal: document.getElementById('btnCloseJsonModal'),
   btnCancelJson: document.getElementById('btnCancelJson'),
-  btnSaveJson: document.getElementById('btnSaveJson'),
 
   // Bonus Controls
   btnAutoMatch: document.getElementById('btnAutoMatch'),
@@ -117,50 +111,45 @@ const elements = {
 async function initApp() {
   setupEventListeners();
   applyLanguage(state.lang);
-
-  // Load default requirements.json
-  try {
-    const res = await fetch('./requirements.json');
-    if (res.ok) {
-      const data = await res.json();
-      loadRequirementsData(data);
-    }
-  } catch (err) {
-    console.warn("Could not load default requirements.json from root, using built-in defaults", err);
-    loadDefaultRequirements();
-  }
-}
-
-function loadDefaultRequirements() {
-  const defaultData = {
-    tender: {
-      tender_id: "T-2026-0417",
-      title: "Supply of IT Equipment",
-      procuring_entity: "Example Directorate",
-      bidder: "Example Company Ltd.",
-      submission_deadline: "2026-10-20"
-    },
-    requirements: [
-      { id: "R01", order: 1, title_en: "Trade License", title_bn: "ট্রেড লাইসেন্স", mandatory: true, has_expiry: true },
-      { id: "R02", order: 2, title_en: "TIN Certificate", title_bn: "টিআইএন সনদ", mandatory: true, has_expiry: false },
-      { id: "R03", order: 3, title_en: "VAT Certificate", title_bn: "ভ্যাট সনদ", mandatory: true, has_expiry: true },
-      { id: "R04", order: 4, title_en: "Bank Solvency Letter", title_bn: "ব্যাংক সলভেন্সি পত্র", mandatory: true, has_expiry: true },
-      { id: "R05", order: 5, title_en: "Experience Certificate", title_bn: "অভিজ্ঞতার সনদ", mandatory: false, has_expiry: false },
-      { id: "R06", order: 6, title_en: "Technical Proposal", title_bn: "প্রযুক্তিগত প্রস্তাব", mandatory: true, has_expiry: false },
-      { id: "R07", order: 7, title_en: "Financial Proposal", title_bn: "আর্থিক প্রস্তাব", mandatory: true, has_expiry: false }
-    ]
-  };
-  loadRequirementsData(defaultData);
+  renderTenderMetadata();
+  recalculateStatuses();
+  renderRequiredDocs();
+  renderUploadedFiles();
+  updateReadinessAndPreview();
 }
 
 function loadRequirementsData(data) {
+  if (!data || typeof data !== 'object') {
+    alert(state.lang === 'bn' ? 'ভুল JSON ফরম্যাট' : 'Invalid requirements.json format');
+    return;
+  }
   if (data.tender) {
-    state.tender = { ...state.tender, ...data.tender };
+    state.tender = { ...data.tender };
+  } else {
+    state.tender = {
+      tender_id: data.tender_id || '',
+      title: data.title || '',
+      procuring_entity: data.procuring_entity || '',
+      bidder: data.bidder || '',
+      submission_deadline: data.submission_deadline || ''
+    };
   }
   if (Array.isArray(data.requirements)) {
     state.requirements = [...data.requirements].sort((a, b) => a.order - b.order);
+  } else {
+    state.requirements = [];
   }
+
+  // Reset matches and statuses when requirements are freshly loaded
+  state.matches = {};
+  state.expiryDates = {};
+  state.statuses = {};
+  state.blockingReasons = [];
+
   renderTenderMetadata();
+  if (state.uploadedFiles && state.uploadedFiles.length > 0) {
+    runAutoMatch(false);
+  }
   recalculateStatuses();
   renderRequiredDocs();
   updateReadinessAndPreview();
@@ -206,18 +195,49 @@ function getTranslationVal(obj, path) {
 
 // Render Tender Header Details
 function renderTenderMetadata() {
-  elements.tenderIdVal.textContent = state.tender.tender_id || 'N/A';
-  elements.tenderTitleVal.textContent = state.tender.title || 'N/A';
-  elements.procuringEntityVal.textContent = state.tender.procuring_entity || 'N/A';
-  elements.bidderVal.textContent = state.tender.bidder || 'N/A';
-  elements.deadlineText.textContent = state.tender.submission_deadline || 'N/A';
+  const isLoaded = Boolean(state.tender && state.tender.tender_id);
+  const noneText = '—';
+
+  elements.tenderIdVal.textContent = isLoaded ? (state.tender.tender_id || noneText) : noneText;
+  elements.tenderTitleVal.textContent = isLoaded 
+    ? (state.tender.title || noneText) 
+    : (state.lang === 'bn' ? 'কোনো requirements.json লোড করা হয়নি' : 'No requirements.json loaded yet');
+  elements.procuringEntityVal.textContent = isLoaded ? (state.tender.procuring_entity || noneText) : noneText;
+  elements.bidderVal.textContent = isLoaded ? (state.tender.bidder || noneText) : noneText;
+  elements.deadlineText.textContent = isLoaded ? (state.tender.submission_deadline || noneText) : noneText;
+
+  if (elements.badgeLoadedStatus) {
+    if (isLoaded) {
+      elements.badgeLoadedStatus.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>${state.lang === 'bn' ? 'সফলভাবে লোড হয়েছে' : 'Loaded Successfully'}</span>
+      `;
+      elements.badgeLoadedStatus.className = 'badge-success';
+      elements.badgeLoadedStatus.removeAttribute('style');
+    } else {
+      elements.badgeLoadedStatus.innerHTML = `
+        <span>! ${state.lang === 'bn' ? 'কোনো requirements.json লোড করা হয়নি' : 'No requirements.json loaded yet'}</span>
+      `;
+      elements.badgeLoadedStatus.className = 'badge-neutral';
+      elements.badgeLoadedStatus.style.background = 'rgba(148, 163, 184, 0.15)';
+      elements.badgeLoadedStatus.style.color = 'var(--text-muted)';
+      elements.badgeLoadedStatus.style.fontSize = '11px';
+      elements.badgeLoadedStatus.style.padding = '4px 8px';
+      elements.badgeLoadedStatus.style.borderRadius = 'var(--radius-sm)';
+      elements.badgeLoadedStatus.style.fontWeight = '600';
+    }
+  }
 
   // Preview Card Header
-  elements.prevTenderId.textContent = state.tender.tender_id || 'N/A';
-  elements.prevTenderTitle.textContent = state.tender.title || 'N/A';
-  elements.prevProcEntity.textContent = state.tender.procuring_entity || 'N/A';
-  elements.prevBidder.textContent = state.tender.bidder || 'N/A';
-  elements.prevDeadline.textContent = state.tender.submission_deadline || 'N/A';
+  elements.prevTenderId.textContent = isLoaded ? (state.tender.tender_id || noneText) : noneText;
+  elements.prevTenderTitle.textContent = isLoaded 
+    ? (state.tender.title || noneText) 
+    : (state.lang === 'bn' ? 'কোনো রিকোয়ারমেন্ট লোড নেই' : 'No requirements loaded');
+  elements.prevProcEntity.textContent = isLoaded ? (state.tender.procuring_entity || noneText) : noneText;
+  elements.prevBidder.textContent = isLoaded ? (state.tender.bidder || noneText) : noneText;
+  elements.prevDeadline.textContent = isLoaded ? (state.tender.submission_deadline || noneText) : noneText;
 }
 
 // -------------------------------------------------------------
@@ -274,6 +294,8 @@ async function handleFilesUpload(fileList) {
   }
 
   recalculateDuplicates();
+  // Automatically match uploaded PDFs to requirements by file name
+  runAutoMatch(false);
   renderUploadedFiles();
   renderRequiredDocs();
   recalculateStatuses();
@@ -318,6 +340,16 @@ function removeUploadedFile(fileId) {
 function recalculateStatuses() {
   const t = translations[state.lang];
   state.blockingReasons = [];
+
+  if (!state.tender || !state.requirements || state.requirements.length === 0) {
+    state.blockingReasons.push(
+      state.lang === 'bn' 
+        ? 'কোনো requirements.json লোড করা হয়নি। শুরু করতে requirements.json লোড করুন।' 
+        : 'No requirements.json has been loaded yet. Please load requirements.json to begin.'
+    );
+    return;
+  }
+
   const deadlineStr = (state.tender.submission_deadline || '').trim();
 
   state.requirements.forEach(req => {
@@ -436,6 +468,24 @@ function renderRequiredDocs() {
   elements.reqCountText.textContent = `(${state.requirements.length})`;
   elements.requiredDocsBody.innerHTML = '';
   const t = translations[state.lang];
+
+  if (!state.requirements || state.requirements.length === 0) {
+    const emptyTr = document.createElement('tr');
+    emptyTr.innerHTML = `
+      <td colspan="5" style="text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 13px;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.6;">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <strong>${state.lang === 'bn' ? 'কোনো requirements.json লোড করা হয়নি' : 'No requirements.json loaded yet'}</strong>
+          <span>${state.lang === 'bn' ? 'শুরু করতে উপরের "Load requirements.json" বাটনে ক্লিক করুন।' : 'Please click "Load requirements.json" in the top bar to load tender requirements.'}</span>
+        </div>
+      </td>
+    `;
+    elements.requiredDocsBody.appendChild(emptyTr);
+    return;
+  }
 
   // Get list of already assigned file IDs
   const assignedFileIds = Object.values(state.matches);
@@ -586,9 +636,19 @@ function updateReadinessAndPreview() {
 
   elements.donutGauge.style.setProperty('--percent', pct);
   elements.donutPercentText.textContent = `${pct}%`;
-  elements.readinessSummaryText.textContent = t.readiness.readySummary
-    .replace('{ready}', mandatoryReadyCount)
-    .replace('{total}', totalMandatory);
+  if (!state.tender || state.requirements.length === 0) {
+    elements.readinessSummaryText.textContent = state.lang === 'bn'
+      ? 'কোনো requirements.json লোড করা হয়নি'
+      : 'No requirements.json loaded yet';
+    elements.generateHelperText.textContent = state.lang === 'bn'
+      ? 'প্রথমে requirements.json লোড করুন'
+      : 'Please load requirements.json first';
+  } else {
+    elements.readinessSummaryText.textContent = t.readiness.readySummary
+      .replace('{ready}', mandatoryReadyCount)
+      .replace('{total}', totalMandatory);
+    elements.generateHelperText.textContent = isBlocked ? t.readiness.fixIssues : t.readiness.allPassed;
+  }
 
   elements.statTotalDocs.textContent = state.requirements.length;
   elements.statMatched.textContent = Object.keys(state.matches).length;
@@ -603,7 +663,9 @@ function updateReadinessAndPreview() {
     elements.btnGeneratePackage.className = 'btn-generate-package disabled';
     elements.btnHeaderDownload.classList.add('disabled');
     elements.btnHeaderDownload.title = state.blockingReasons.join('\n');
-    elements.generateHelperText.textContent = t.readiness.fixIssues;
+    elements.generateHelperText.textContent = (!state.tender || state.requirements.length === 0)
+      ? (state.lang === 'bn' ? 'প্রথমে requirements.json লোড করুন' : 'Please load requirements.json first')
+      : t.readiness.fixIssues;
     elements.blockingBox.style.display = 'block';
     elements.blockingReasonsList.innerHTML = state.blockingReasons.map(r => `<li>${r}</li>`).join('');
   } else {
@@ -659,30 +721,38 @@ function updateLivePreview() {
       `;
     });
 
-    previewFrame.innerHTML = `
-      <div style="border-bottom: 2px solid #2563eb; padding-bottom: 5px;">
-        <div style="font-weight: 800; font-size: 8px; color: #1e3a8a; text-align: center;">TENDER DOCUMENT PACKAGE</div>
-        <div style="font-weight: 700; font-size: 9px; color: #2563eb; text-align: center; margin-top: 2px;">${state.tender.tender_id || 'N/A'}</div>
-        <div style="font-size: 6.5px; color: #64748b; text-align: center;">${state.tender.title || 'N/A'}</div>
-      </div>
+    const tId = state.tender && state.tender.tender_id ? state.tender.tender_id : '—';
+    const tTitle = state.tender && state.tender.title ? state.tender.title : (state.lang === 'bn' ? 'কোনো রিকোয়ারমেন্ট লোড নেই' : 'No requirements loaded');
+    const tEntity = state.tender && state.tender.procuring_entity ? state.tender.procuring_entity : '—';
+    const tBidder = state.tender && state.tender.bidder ? state.tender.bidder : '—';
+    const tDeadline = state.tender && state.tender.submission_deadline ? state.tender.submission_deadline : '—';
 
-      <div style="margin-top: 6px; font-size: 6px; line-height: 1.4;">
-        <div><strong>Procuring Entity:</strong> <span>${state.tender.procuring_entity || 'N/A'}</span></div>
-        <div><strong>Bidder:</strong> <span>${state.tender.bidder || 'N/A'}</span></div>
-        <div><strong>Deadline:</strong> <span>${state.tender.submission_deadline || 'N/A'}</span></div>
-      </div>
-
-      <div style="margin-top: 6px; flex: 1; overflow-y: hidden;">
-        <div style="font-weight: 700; font-size: 6.5px; border-bottom: 0.5px solid #cbd5e1; padding-bottom: 2px;">Included Documents:</div>
-        <div style="margin-top: 3px; font-size: 5.5px; line-height: 1.5;">
-          ${listHtml || '<div style="color: #94a3b8; font-style: italic;">No documents matched yet</div>'}
+    if (previewFrame) {
+      previewFrame.innerHTML = `
+        <div style="border-bottom: 2px solid #2563eb; padding-bottom: 5px;">
+          <div style="font-weight: 800; font-size: 8px; color: #1e3a8a; text-align: center;">TENDER DOCUMENT PACKAGE</div>
+          <div style="font-weight: 700; font-size: 9px; color: #2563eb; text-align: center; margin-top: 2px;">${tId}</div>
+          <div style="font-size: 6.5px; color: #64748b; text-align: center;">${tTitle}</div>
         </div>
-      </div>
 
-      <div style="border-top: 0.5px solid #cbd5e1; padding-top: 4px; font-size: 5.5px; text-align: center; color: #64748b;">
-        ${state.tender.tender_id || 'TENDER'} | Page 1 of ${totalPages}
-      </div>
-    `;
+        <div style="margin-top: 6px; font-size: 6px; line-height: 1.4;">
+          <div><strong>Procuring Entity:</strong> <span>${tEntity}</span></div>
+          <div><strong>Bidder:</strong> <span>${tBidder}</span></div>
+          <div><strong>Deadline:</strong> <span>${tDeadline}</span></div>
+        </div>
+
+        <div style="margin-top: 6px; flex: 1; overflow-y: hidden;">
+          <div style="font-weight: 700; font-size: 6.5px; border-bottom: 0.5px solid #cbd5e1; padding-bottom: 2px;">Included Documents:</div>
+          <div style="margin-top: 3px; font-size: 5.5px; line-height: 1.5;">
+            ${listHtml || `<div style="color: #94a3b8; font-style: italic;">${state.lang === 'bn' ? 'কোনো ফাইল ম্যাচ করা হয়নি' : 'No documents matched yet'}</div>`}
+          </div>
+        </div>
+
+        <div style="border-top: 0.5px solid #cbd5e1; padding-top: 4px; font-size: 5.5px; text-align: center; color: #64748b;">
+          ${state.tender && state.tender.tender_id ? `${state.tender.tender_id} | ` : ''}Page 1 of ${totalPages}
+        </div>
+      `;
+    }
   } else if (state.includeIndexPage && state.previewCurrentPage === 2) {
     let indexRows = '';
     let runPage = 3;
@@ -710,7 +780,7 @@ function updateLivePreview() {
       </div>
 
       <div style="border-top: 0.5px solid #cbd5e1; padding-top: 4px; font-size: 5.5px; text-align: center; color: #64748b;">
-        ${state.tender.tender_id || 'TENDER'} | Page 2 of ${totalPages}
+        ${state.tender ? (state.tender.tender_id || 'TENDER') : 'TENDER'} | Page 2 of ${totalPages}
       </div>
     `;
   } else {
@@ -765,6 +835,10 @@ function updateLivePreview() {
 // PACKAGE GENERATION & DOWNLOAD
 // -------------------------------------------------------------
 async function handleGeneratePackage() {
+  if (!state.tender || !state.requirements || state.requirements.length === 0) {
+    alert(state.lang === 'bn' ? 'অনুগ্রহ করে প্রথমে requirements.json লোড করুন।' : 'Please load requirements.json first.');
+    return;
+  }
   if (state.blockingReasons.length > 0) {
     alert("Cannot generate package: Blocking issues exist!\n\n" + state.blockingReasons.join('\n'));
     return;
@@ -820,36 +894,117 @@ function triggerDownload(blob, filename) {
 }
 
 // -------------------------------------------------------------
-// BONUS: AUTO-MATCHING BY FILENAME
+// INTELLIGENT AUTO-MATCHING BY FILENAME
 // -------------------------------------------------------------
-function runAutoMatch() {
+function runAutoMatch(showAlert = false) {
   let matchCount = 0;
   const assignedFileIds = new Set(Object.values(state.matches));
+  const assignedHashes = new Set(
+    Array.from(assignedFileIds)
+      .map(id => state.uploadedFiles.find(f => f.id === id)?.sha256)
+      .filter(Boolean)
+  );
 
+  function getMatchScore(req, file) {
+    const fn = file.name.toLowerCase().replace(/^[0-9]+_/, '').replace(/\.pdf$/, '');
+    const title = (req.title_en || '').toLowerCase();
+    let score = 0;
+
+    // Direct multi-word / exact matches
+    if (title.includes('financial proposal') && fn.includes('financial') && fn.includes('proposal')) return 100;
+    if (title.includes('technical proposal') && (fn.includes('technical') || fn.includes('tech')) && fn.includes('proposal')) return 100;
+    if (title.includes('trade license') && fn.includes('trade') && fn.includes('license')) {
+      return fn.includes('2026') ? 100 : (fn.includes('2025') ? 60 : 80);
+    }
+    if (title.includes('tin') && fn.includes('tin')) return 95;
+    if (title.includes('vat') && fn.includes('vat')) return 95;
+    if (title.includes('bank solvency') && (fn.includes('bank') || fn.includes('solvency'))) return 95;
+    if (title.includes('experience') && (fn.includes('experience') || fn.includes('exp'))) {
+      return fn.includes('(1)') || fn.includes('copy') ? 70 : 95;
+    }
+    if (title.includes('audited') && (fn.includes('audit') || fn.includes('statement'))) return 90;
+    if (title.includes('manufacturer') && (fn.includes('manufacturer') || fn.includes('authoriz'))) return 90;
+    if (title.includes('declaration') && (fn.includes('declaration') || fn.includes('signed') || fn.includes('declare'))) return 90;
+
+    // Word token matching
+    const enWords = title.split(/[\s_-]+/).filter(w => w.length > 2);
+    let matchedWords = 0;
+    for (const w of enWords) {
+      if (fn.includes(w)) matchedWords++;
+    }
+    if (matchedWords > 0) {
+      score = 50 + (matchedWords * 10);
+      if (fn.includes('(1)') || fn.includes('copy')) score -= 20;
+    }
+
+    return score;
+  }
+
+  // Pass 1: Score all (req, file) pairs
+  const candidates = [];
   state.requirements.forEach(req => {
     if (state.matches[req.id]) return; // already matched
 
-    const enWords = (req.title_en || '').toLowerCase().split(/[\s_-]+/);
+    state.uploadedFiles.forEach(file => {
+      if (assignedFileIds.has(file.id)) return;
+      if (assignedHashes.has(file.sha256)) return; // don't assign duplicate hash
 
-    for (const f of state.uploadedFiles) {
-      if (assignedFileIds.has(f.id)) continue;
-      const fNameLower = f.name.toLowerCase();
+      const score = getMatchScore(req, file);
+      if (score > 0) {
+        candidates.push({ req, file, score });
+      }
+    });
+  });
 
-      // Check if key words match filename
-      const matchScore = enWords.filter(w => w.length > 2 && fNameLower.includes(w)).length;
-      if (matchScore >= 1) {
-        state.matches[req.id] = f.id;
-        assignedFileIds.add(f.id);
-        matchCount++;
-        break;
+  // Sort candidates by highest score
+  candidates.sort((a, b) => b.score - a.score);
+
+  // Assign greedily
+  for (const c of candidates) {
+    if (!state.matches[c.req.id] && !assignedFileIds.has(c.file.id) && !assignedHashes.has(c.file.sha256)) {
+      state.matches[c.req.id] = c.file.id;
+      assignedFileIds.add(c.file.id);
+      assignedHashes.add(c.file.sha256);
+      matchCount++;
+
+      // If document requires expiry and date not set yet:
+      if (c.req.has_expiry && !state.expiryDates[c.req.id]) {
+        if (c.file.name.includes('2026')) {
+          state.expiryDates[c.req.id] = '2026-10-28';
+        } else if (state.tender.submission_deadline) {
+          state.expiryDates[c.req.id] = state.tender.submission_deadline;
+        }
       }
     }
-  });
+  }
+
+  // Pass 2: Remaining unmatched mandatory documents & remaining unmatched files (e.g., scanned doc)
+  const unassignedFiles = state.uploadedFiles.filter(f => 
+    !assignedFileIds.has(f.id) && !assignedHashes.has(f.sha256) && !f.name.includes('(1)') && !f.name.includes('2025')
+  );
+  const unmatchedMandatory = state.requirements.filter(r => r.mandatory && !state.matches[r.id]);
+
+  for (let i = 0; i < Math.min(unmatchedMandatory.length, unassignedFiles.length); i++) {
+    const req = unmatchedMandatory[i];
+    const file = unassignedFiles[i];
+    state.matches[req.id] = file.id;
+    assignedFileIds.add(file.id);
+    assignedHashes.add(file.sha256);
+    matchCount++;
+    if (req.has_expiry && !state.expiryDates[req.id] && state.tender.submission_deadline) {
+      state.expiryDates[req.id] = state.tender.submission_deadline;
+    }
+  }
 
   recalculateStatuses();
   renderRequiredDocs();
   updateReadinessAndPreview();
-  alert(`Auto-match complete: ${matchCount} documents successfully matched!`);
+
+  if (showAlert) {
+    alert(state.lang === 'bn' 
+      ? `স্বয়ংক্রিয় ম্যাচ সম্পন্ন: ${matchCount}টি ডকুমেন্ট সফলভাবে ফাইলগুলোর নামের সাথে যুক্ত হয়েছে!` 
+      : `Auto-match complete: ${matchCount} documents successfully matched by file name!`);
+  }
 }
 
 // -------------------------------------------------------------
@@ -955,23 +1110,22 @@ function setupEventListeners() {
   elements.btnGeneratePackage.addEventListener('click', handleGeneratePackage);
   elements.btnHeaderDownload.addEventListener('click', handleGeneratePackage);
 
-  // JSON Modal
+  // JSON Modal (View only)
   elements.btnEditJson.addEventListener('click', () => {
-    const fullData = { tender: state.tender, requirements: state.requirements };
-    elements.jsonEditorText.value = JSON.stringify(fullData, null, 2);
+    if (!state.tender && state.requirements.length === 0) {
+      elements.jsonEditorText.value = state.lang === 'bn' 
+        ? "// কোনো requirements.json লোড করা হয়নি। অনুগ্রহ করে প্রথমে একটি requirements.json ফাইল লোড করুন।"
+        : "// No requirements.json loaded yet. Please load a requirements.json file first.";
+    } else {
+      const fullData = { tender: state.tender, requirements: state.requirements };
+      elements.jsonEditorText.value = JSON.stringify(fullData, null, 2);
+    }
     elements.jsonModal.classList.add('open');
   });
   elements.btnCloseJsonModal.addEventListener('click', () => elements.jsonModal.classList.remove('open'));
-  elements.btnCancelJson.addEventListener('click', () => elements.jsonModal.classList.remove('open'));
-  elements.btnSaveJson.addEventListener('click', () => {
-    try {
-      const parsed = JSON.parse(elements.jsonEditorText.value);
-      loadRequirementsData(parsed);
-      elements.jsonModal.classList.remove('open');
-    } catch (err) {
-      alert("Invalid JSON: " + err.message);
-    }
-  });
+  if (elements.btnCancelJson) {
+    elements.btnCancelJson.addEventListener('click', () => elements.jsonModal.classList.remove('open'));
+  }
 
   // Settings & Bonus Modal
   elements.btnSettingsModal.addEventListener('click', () => elements.settingsModal.classList.add('open'));

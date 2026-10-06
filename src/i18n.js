@@ -10,7 +10,7 @@ export const translations = {
       step3: "Match & Check",
       step3Sub: "Assign files and enter dates",
       step4: "Preview Package",
-      step4Sub: "Review and reorder",
+      step4Sub: "Review final package",
       step5: "Generate PDF",
       step5Sub: "Create final package"
     },
@@ -30,7 +30,8 @@ export const translations = {
     tenderInfo: {
       title: "Tender Information",
       loadedSuccess: "Loaded Successfully",
-      editJson: "Edit/View JSON",
+      notLoaded: "No requirements.json loaded yet",
+      editJson: "View JSON",
       tenderId: "Tender ID",
       tenderTitle: "Tender Title",
       procuringEntity: "Procuring Entity",
@@ -133,7 +134,7 @@ export const translations = {
       step3: "ম্যাচিং ও যাচাই",
       step3Sub: "ফাইল অ্যাসাইন ও মেয়াদ দিন",
       step4: "প্যাকেজ প্রিভিউ",
-      step4Sub: "পর্যালোচনা ও ক্রম ঠিক করুন",
+      step4Sub: "চূড়ান্ত প্যাকেজ পর্যালোচনা",
       step5: "পিডিএফ তৈরি",
       step5Sub: "চূড়ান্ত প্যাকেজ তৈরি করুন"
     },
@@ -153,7 +154,8 @@ export const translations = {
     tenderInfo: {
       title: "টেন্ডার সম্পর্কিত তথ্য",
       loadedSuccess: "সফলভাবে লোড হয়েছে",
-      editJson: "JSON দেখুন/সম্পাদনা",
+      notLoaded: "কোনো requirements.json লোড করা হয়নি",
+      editJson: "JSON দেখুন",
       tenderId: "টেন্ডার আইডি",
       tenderTitle: "টেন্ডারের নাম",
       procuringEntity: "সংগ্রহকারী কর্তৃপক্ষ",

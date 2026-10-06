@@ -9,7 +9,7 @@
 - **Name:** Fayek Ahanaf
 - **Registration Number:** `252-16-056`
 - **GitHub Repository:** [https://github.com/dev-ahanaf/devfest-252-16-056](https://github.com/dev-ahanaf/devfest-252-16-056)
-- **Public HTTPS Live Website:** [https://dev-ahanaf.github.io/devfest-252-16-056/](https://dev-ahanaf.github.io/devfest-252-16-056/)
+- **Public HTTPS Live Website:** [https://tenderdoc-builder.vercel.app/](https://tenderdoc-builder.vercel.app/)
 
 ---
 
@@ -29,7 +29,7 @@ The application follows the **Official Rulebook** and the **Problem Statement** 
 
 ### Option 1: Live Demo (No installation required)
 Simply open the public HTTPS link in Google Chrome:
-👉 **[https://dev-ahanaf.github.io/devfest-252-16-056/](https://dev-ahanaf.github.io/devfest-252-16-056/)**
+👉 **[https://tenderdoc-builder.vercel.app/](https://tenderdoc-builder.vercel.app/)**
 
 ### Option 2: Run Locally
 1. **Clone the repository:**
@@ -92,7 +92,7 @@ Simply open the public HTTPS link in Google Chrome:
 - [x] **Save & Restore Work:** LocalStorage persistence to save and reload matching progress at any time.
 - [x] **Seal / Signature Placement:** Ability to upload an official seal PNG and place it on document pages.
 - [x] **Dark & Light Mode:** Toggleable theme switch for comfortable day/night usage.
-- [x] **Interactive JSON Editor:** In-app modal to view, edit, and apply custom `requirements.json` definitions on the fly.
+- [x] **View requirements.json:** In-app modal to inspect loaded requirements JSON cleanly without compliance risks.
 
 ---
 
@@ -105,19 +105,18 @@ Simply open the public HTTPS link in Google Chrome:
 ---
 
 ## 🧪 Sample Pack & Test Verification
-The sample pack provided in `sample-pack/` covers all hidden real-world test cases:
-1. `VAT_Certificate.pdf` vs `VAT_Certificate_copy.pdf` — identical SHA-256 byte hash detected as duplicates.
-2. `VAT_Certificate.pdf` — expired (`2025-09-30`) before submission deadline (`2026-10-20`).
-3. `VAT_Certificate_Renewed.pdf` — valid expiry (`2027-12-31`) resolves the issue.
-4. `Technical_Proposal.pdf` — contains page with 90° rotation, rendered correctly in output.
-5. `Corrupted_File.pdf` — caught and flagged safely.
-6. `Invalid_Document.txt` — non-PDF rejected immediately.
-7. Output verified: `output/T-2026-0417_Package.pdf` (34 pages total with correct footers).
+The application was verified against the organizer-provided `sample-pack/`:
+1. **requirements.json Loading:** Correctly loads Tender ID `T-2026-0417`, Procuring Entity `Directorate of Sample Services`, Bidder `Meghna Tech Solutions Ltd.`, and dynamically derives 10 requirements (8 mandatory, 2 optional) sorted by `order`.
+2. **Document Upload & Format Validation:** Tested with `sample-pack/documents/`. Non-PDF files such as `company_logo.png` are cleanly rejected by magic header check, loading the 10 valid PDF files.
+3. **SHA-256 Duplicate Detection:** Correctly identifies that `experience_cert (1).pdf` and `experience_cert.pdf` share identical content hashes and flags them.
+4. **Expiry Verification:** Correctly detects `trade_license_2025.pdf` as expired relative to the tender deadline (`2026-10-20`), while `trade_license_2026.pdf` passes as valid.
+5. **Multi-page & Scanned PDFs:** `02_technical_proposal.pdf` (6 pages) and `scan_0042.pdf` are accurately parsed and rendered.
+6. **Package Generation:** Produces a verified, compliant merged PDF package with cover page and standardized `<tender_id> | Page X of Y` footers.
 
 ---
 
-## ⚠️ Known Problems
-- None. All main and bonus requirements tested and verified against the sample pack and edge-case matrix.
+## ⚠️ Known Limitations
+- Purely client-side browser execution: large PDF batches (>50MB) depend on available client-side device memory.
 
 ---
 

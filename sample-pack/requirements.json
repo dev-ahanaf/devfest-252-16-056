@@ -2,8 +2,8 @@
   "tender": {
     "tender_id": "T-2026-0417",
     "title": "Supply of IT Equipment",
-    "procuring_entity": "Example Directorate",
-    "bidder": "Example Company Ltd.",
+    "procuring_entity": "Directorate of Sample Services",
+    "bidder": "Meghna Tech Solutions Ltd.",
     "submission_deadline": "2026-10-20"
   },
   "requirements": [
@@ -26,16 +26,16 @@
     {
       "id": "R03",
       "order": 3,
-      "title_en": "VAT Certificate",
-      "title_bn": "ভ্যাট সনদ",
+      "title_en": "VAT Registration Certificate",
+      "title_bn": "ভ্যাট নিবন্ধন সনদ",
       "mandatory": true,
-      "has_expiry": true
+      "has_expiry": false
     },
     {
       "id": "R04",
       "order": 4,
-      "title_en": "Bank Solvency Letter",
-      "title_bn": "ব্যাংক সলভেন্সি পত্র",
+      "title_en": "Bank Solvency Certificate",
+      "title_bn": "ব্যাংক সচ্ছলতা সনদ",
       "mandatory": true,
       "has_expiry": true
     },
@@ -44,22 +44,46 @@
       "order": 5,
       "title_en": "Experience Certificate",
       "title_bn": "অভিজ্ঞতার সনদ",
-      "mandatory": false,
+      "mandatory": true,
       "has_expiry": false
     },
     {
       "id": "R06",
       "order": 6,
-      "title_en": "Technical Proposal",
-      "title_bn": "প্রযুক্তিগত প্রস্তাব",
-      "mandatory": true,
+      "title_en": "Audited Financial Statement",
+      "title_bn": "নিরীক্ষিত আর্থিক বিবরণী",
+      "mandatory": false,
       "has_expiry": false
     },
     {
       "id": "R07",
       "order": 7,
+      "title_en": "Manufacturer's Authorization",
+      "title_bn": "প্রস্তুতকারকের অনুমোদনপত্র",
+      "mandatory": false,
+      "has_expiry": true
+    },
+    {
+      "id": "R08",
+      "order": 8,
+      "title_en": "Technical Proposal",
+      "title_bn": "কারিগরি প্রস্তাব",
+      "mandatory": true,
+      "has_expiry": false
+    },
+    {
+      "id": "R09",
+      "order": 9,
       "title_en": "Financial Proposal",
       "title_bn": "আর্থিক প্রস্তাব",
+      "mandatory": true,
+      "has_expiry": false
+    },
+    {
+      "id": "R10",
+      "order": 10,
+      "title_en": "Signed Declaration",
+      "title_bn": "স্বাক্ষরিত ঘোষণাপত্র",
       "mandatory": true,
       "has_expiry": false
     }

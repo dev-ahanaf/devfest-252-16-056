@@ -44,7 +44,7 @@
           <div class="step-num">4</div>
           <div class="step-info">
             <span class="step-title" data-i18n="steps.step4">Preview Package</span>
-            <span class="step-sub" data-i18n="steps.step4Sub">Review and reorder</span>
+            <span class="step-sub" data-i18n="steps.step4Sub">Review final package</span>
           </div>
         </div>
 
@@ -233,44 +233,41 @@
                 <h2 data-i18n="tenderInfo.title">Tender Information</h2>
                 <small style="color: var(--text-muted);">Details from requirements.json</small>
               </div>
-              <span class="badge-success" id="badgeLoadedStatus">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                <span data-i18n="tenderInfo.loadedSuccess">Loaded Successfully</span>
+              <span class="badge-neutral" id="badgeLoadedStatus" style="background: rgba(148, 163, 184, 0.15); color: var(--text-muted); font-size: 11px; padding: 4px 8px; border-radius: var(--radius-sm); font-weight: 600;">
+                ! <span data-i18n="tenderInfo.notLoaded">No requirements.json loaded yet</span>
               </span>
             </div>
 
-            <button class="btn-sm-outline" id="btnEditJson">
+            <button class="btn-sm-outline" id="btnEditJson" title="View requirements.json">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
               </svg>
-              <span data-i18n="tenderInfo.editJson">Edit/View JSON</span>
+              <span data-i18n="tenderInfo.editJson">View JSON</span>
             </button>
           </div>
 
           <div class="tender-meta-grid">
             <div class="meta-item">
               <span class="meta-label" data-i18n="tenderInfo.tenderId">Tender ID</span>
-              <span class="meta-value highlight" id="tenderIdVal">T-2026-0417</span>
+              <span class="meta-value highlight" id="tenderIdVal">—</span>
             </div>
             <div class="meta-item">
               <span class="meta-label" data-i18n="tenderInfo.tenderTitle">Tender Title</span>
-              <span class="meta-value" id="tenderTitleVal">Supply of IT Equipment</span>
+              <span class="meta-value" id="tenderTitleVal">No requirements loaded</span>
             </div>
             <div class="meta-item">
               <span class="meta-label" data-i18n="tenderInfo.procuringEntity">Procuring Entity</span>
-              <span class="meta-value" id="procuringEntityVal">Example Directorate</span>
+              <span class="meta-value" id="procuringEntityVal">—</span>
             </div>
             <div class="meta-item">
               <span class="meta-label" data-i18n="tenderInfo.bidder">Bidder</span>
-              <span class="meta-value" id="bidderVal">Example Company Ltd.</span>
+              <span class="meta-value" id="bidderVal">—</span>
             </div>
             <div class="meta-item">
               <span class="meta-label" data-i18n="tenderInfo.submissionDeadline">Submission Deadline</span>
               <span class="meta-value deadline" id="deadlineVal">
-                📅 <span id="deadlineText">2026-10-20</span>
+                📅 <span id="deadlineText">—</span>
               </span>
             </div>
           </div>
@@ -333,7 +330,7 @@
                   <line x1="16" y1="13" x2="8" y2="13"></line>
                 </svg>
                 <span data-i18n="requiredDocs.title">Required Documents</span>
-                <span style="color: var(--text-muted); font-size: 13px;" id="reqCountText">(7)</span>
+                <span style="color: var(--text-muted); font-size: 13px;" id="reqCountText">(0)</span>
               </div>
               <div class="panel-actions">
                 <div class="status-filters">
@@ -389,14 +386,14 @@
             <!-- Dynamic Mini Cover Layout -->
             <div style="border-bottom: 2px solid #2563eb; padding-bottom: 5px;">
               <div style="font-weight: 800; font-size: 8px; color: #1e3a8a; text-align: center;">TENDER DOCUMENT PACKAGE</div>
-              <div style="font-weight: 700; font-size: 9px; color: #2563eb; text-align: center; margin-top: 2px;" id="prevTenderId">T-2026-0417</div>
-              <div style="font-size: 6.5px; color: #64748b; text-align: center;" id="prevTenderTitle">Supply of IT Equipment</div>
+              <div style="font-weight: 700; font-size: 9px; color: #2563eb; text-align: center; margin-top: 2px;" id="prevTenderId">—</div>
+              <div style="font-size: 6.5px; color: #64748b; text-align: center;" id="prevTenderTitle">No requirements loaded</div>
             </div>
 
             <div style="margin-top: 6px; font-size: 6px; line-height: 1.4;">
-              <div><strong>Procuring Entity:</strong> <span id="prevProcEntity">Example Directorate</span></div>
-              <div><strong>Bidder:</strong> <span id="prevBidder">Example Company Ltd.</span></div>
-              <div><strong>Deadline:</strong> <span id="prevDeadline">2026-10-20</span></div>
+              <div><strong>Procuring Entity:</strong> <span id="prevProcEntity">—</span></div>
+              <div><strong>Bidder:</strong> <span id="prevBidder">—</span></div>
+              <div><strong>Deadline:</strong> <span id="prevDeadline">—</span></div>
             </div>
 
             <div style="margin-top: 6px; flex: 1;">
@@ -407,7 +404,7 @@
             </div>
 
             <div style="border-top: 0.5px solid #cbd5e1; padding-top: 4px; font-size: 5.5px; text-align: center; color: #64748b;" id="prevFooterText">
-              T-2026-0417 | Page 1 of 1
+              Page 1 of 1
             </div>
           </div>
 
@@ -480,19 +477,18 @@
   <input type="file" id="reqFileInput" accept="application/json,.json" style="display: none;">
   <input type="file" id="sealFileInput" accept="image/png,.png" style="display: none;">
 
-  <!-- Modal: Edit / View requirements.json -->
+  <!-- Modal: View requirements.json -->
   <div class="modal-overlay" id="jsonModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Edit / View requirements.json</h3>
+        <h3>View requirements.json</h3>
         <button class="action-icon-btn" id="btnCloseJsonModal">✕</button>
       </div>
       <div class="modal-body">
-        <textarea id="jsonEditorText" style="width: 100%; height: 320px; font-family: monospace; font-size: 12px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--neutral-bg); color: var(--text-main);"></textarea>
+        <textarea id="jsonEditorText" readonly style="width: 100%; height: 320px; font-family: monospace; font-size: 12px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--neutral-bg); color: var(--text-main); outline: none;"></textarea>
       </div>
       <div class="modal-footer">
-        <button class="btn-sm-outline" id="btnCancelJson">Cancel</button>
-        <button class="btn-sm-primary" id="btnSaveJson">Apply JSON</button>
+        <button class="btn-sm-primary" id="btnCancelJson">Close</button>
       </div>
     </div>
   </div>
