@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TenderDoc Builder | AI DevFest 2026</title>
+  <!-- Google Fonts: Inter & Noto Sans Bengali -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app-container" id="app">
+    <!-- 1. LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-nav">
+        <!-- Brand Header inside Sidebar -->
+        <div class="step-item active" data-step="1">
+          <div class="step-num">1</div>
+          <div class="step-info">
+            <span class="step-title" data-i18n="steps.step1">Tender Details</span>
+            <span class="step-sub" data-i18n="steps.step1Sub">View tender information</span>
+          </div>
+        </div>
+
+        <div class="step-item" data-step="2">
+          <div class="step-num">2</div>
+          <div class="step-info">
+            <span class="step-title" data-i18n="steps.step2">Upload Documents</span>
+            <span class="step-sub" data-i18n="steps.step2Sub">Add PDF files</span>
+          </div>
+        </div>
+
+        <div class="step-item" data-step="3">
+          <div class="step-num">3</div>
+          <div class="step-info">
+            <span class="step-title" data-i18n="steps.step3">Match & Check</span>
+            <span class="step-sub" data-i18n="steps.step3Sub">Assign files and enter dates</span>
+          </div>
+        </div>
+
+        <div class="step-item" data-step="4">
+          <div class="step-num">4</div>
+          <div class="step-info">
+            <span class="step-title" data-i18n="steps.step4">Preview Package</span>
+            <span class="step-sub" data-i18n="steps.step4Sub">Review and reorder</span>
+          </div>
+        </div>
+
+        <div class="step-item" data-step="5">
+          <div class="step-num">5</div>
+          <div class="step-info">
+            <span class="step-title" data-i18n="steps.step5">Generate PDF</span>
+            <span class="step-sub" data-i18n="steps.step5Sub">Create final package</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar Bottom 3D Graphic & Mottos -->
+      <div class="sidebar-bottom">
+        <div class="sidebar-3d-icon">
+          <!-- Stylized Isometric Document Layers SVG -->
+          <svg width="80" height="70" viewBox="0 0 100 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 10L85 28L50 46L15 28L50 10Z" fill="#3B82F6" fill-opacity="0.9" stroke="#60A5FA" stroke-width="2"/>
+            <path d="M15 36L50 54L85 36V46L50 64L15 46V36Z" fill="#2563EB" fill-opacity="0.7"/>
+            <path d="M15 52L50 70L85 52V62L50 80L15 62V52Z" fill="#1D4ED8" fill-opacity="0.9"/>
+          </svg>
+        </div>
+        <div class="sidebar-motto" data-i18n="sidebarBrandText">
+          Organize<br>
+          Validate<br>
+          Compile<br>
+          Submit with Confidence
+        </div>
+      </div>
+    </aside>
+
+    <!-- 2. MAIN CENTER CONTENT -->
+    <main class="main-wrapper" id="dropArea">
+      <!-- Top Application Header -->
+      <header class="top-header">
+        <div class="header-brand">
+          <div class="app-logo-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <div class="header-title-wrap">
+            <h1 data-i18n="appTitle">TenderDoc Builder</h1>
+            <p data-i18n="appSubtitle">Prepare • Check • Arrange • Package</p>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <!-- Language Switch EN / বাংলা -->
+          <div class="lang-switch">
+            <button class="lang-btn active" id="btnLangEn">EN</button>
+            <button class="lang-btn" id="btnLangBn">বাংলা</button>
+          </div>
+
+          <!-- Dark / Light Theme Toggle -->
+          <button class="theme-toggle-btn" id="btnThemeToggle" title="Toggle Dark/Light Mode">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="themeIcon">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+
+          <!-- Load requirements.json -->
+          <button class="btn-outline" id="btnLoadReq">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span data-i18n="tenderInfo.loadBtn">Load requirements.json</span>
+          </button>
+
+          <!-- Download Package Header Action -->
+          <button class="btn-primary" id="btnHeaderDownload">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span data-i18n="buttons.download">Download Package</span>
+          </button>
+
+          <!-- Bonus Settings Gear -->
+          <button class="btn-icon" id="btnSettingsModal" title="Tools & Bonus Features">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Scrollable Main Content -->
+      <div class="content-body">
+        <!-- Hero Banner with 4 Features -->
+        <section class="hero-banner">
+          <div class="hero-content">
+            <div class="hero-title-row">
+              <div class="hero-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                  <polyline points="13 2 13 9 20 9"></polyline>
+                </svg>
+              </div>
+              <h2 class="hero-title" data-i18n="heroTitle">Tender Document Package Builder</h2>
+            </div>
+            <p class="hero-desc" data-i18n="heroSubtitle">Make a complete, verified and correctly ordered PDF package for tender submission.</p>
+
+            <div class="hero-features-grid">
+              <div class="feature-pill-card">
+                <div class="pill-icon blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                </div>
+                <div class="pill-texts">
+                  <strong data-i18n="heroFeatures.upload">Upload PDFs</strong>
+                  <span data-i18n="heroFeatures.uploadSub">Add multiple files</span>
+                </div>
+              </div>
+
+              <div class="feature-pill-card">
+                <div class="pill-icon green">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+                <div class="pill-texts">
+                  <strong data-i18n="heroFeatures.autoCheck">Auto Check</strong>
+                  <span data-i18n="heroFeatures.autoCheckSub">Find issues early</span>
+                </div>
+              </div>
+
+              <div class="feature-pill-card">
+                <div class="pill-icon purple">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                  </svg>
+                </div>
+                <div class="pill-texts">
+                  <strong data-i18n="heroFeatures.match">Match & Validate</strong>
+                  <span data-i18n="heroFeatures.matchSub">Check expiry, duplicates</span>
+                </div>
+              </div>
+
+              <div class="feature-pill-card">
+                <div class="pill-icon teal">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                  </svg>
+                </div>
+                <div class="pill-texts">
+                  <strong data-i18n="heroFeatures.generate">Generate Package</strong>
+                  <span data-i18n="heroFeatures.generateSub">One click PDF</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tender Information Card -->
+        <section class="card tender-info-card">
+          <div class="card-header-row">
+            <div class="card-title-flex">
+              <div class="card-title-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <circle cx="12" cy="13" r="2"></circle>
+                </svg>
+              </div>
+              <div>
+                <h2 data-i18n="tenderInfo.title">Tender Information</h2>
+                <small style="color: var(--text-muted);">Details from requirements.json</small>
+              </div>
+              <span class="badge-success" id="badgeLoadedStatus">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span data-i18n="tenderInfo.loadedSuccess">Loaded Successfully</span>
+              </span>
+            </div>
+
+            <button class="btn-sm-outline" id="btnEditJson">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              <span data-i18n="tenderInfo.editJson">Edit/View JSON</span>
+            </button>
+          </div>
+
+          <div class="tender-meta-grid">
+            <div class="meta-item">
+              <span class="meta-label" data-i18n="tenderInfo.tenderId">Tender ID</span>
+              <span class="meta-value highlight" id="tenderIdVal">T-2026-0417</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label" data-i18n="tenderInfo.tenderTitle">Tender Title</span>
+              <span class="meta-value" id="tenderTitleVal">Supply of IT Equipment</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label" data-i18n="tenderInfo.procuringEntity">Procuring Entity</span>
+              <span class="meta-value" id="procuringEntityVal">Example Directorate</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label" data-i18n="tenderInfo.bidder">Bidder</span>
+              <span class="meta-value" id="bidderVal">Example Company Ltd.</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label" data-i18n="tenderInfo.submissionDeadline">Submission Deadline</span>
+              <span class="meta-value deadline" id="deadlineVal">
+                📅 <span id="deadlineText">2026-10-20</span>
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Two Column Workspace: Uploaded Files + Required Documents -->
+        <section class="workspace-columns">
+          <!-- Column 1: Uploaded Documents -->
+          <div class="card table-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+                <span data-i18n="uploadedDocs.title">Uploaded Documents</span>
+                <span style="color: var(--text-muted); font-size: 13px;" id="uploadCountText">(0 files)</span>
+              </div>
+              <div class="panel-actions">
+                <button class="btn-sm-primary" id="btnTriggerUpload">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span data-i18n="uploadedDocs.uploadBtn">+ Upload PDFs</span>
+                </button>
+                <button class="btn-sm-outline" id="btnClearFiles" data-i18n="uploadedDocs.clearAll">Clear All</button>
+              </div>
+            </div>
+
+            <!-- Uploaded Files Table -->
+            <div style="overflow-x: auto; flex: 1;">
+              <table class="custom-table" id="uploadedFilesTable">
+                <thead>
+                  <tr>
+                    <th data-i18n="uploadedDocs.fileName">File Name</th>
+                    <th data-i18n="uploadedDocs.pages">Pages</th>
+                    <th data-i18n="uploadedDocs.size">Size</th>
+                    <th data-i18n="uploadedDocs.duplicate">Duplicate</th>
+                    <th data-i18n="uploadedDocs.actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="uploadedFilesBody">
+                  <!-- Dynamically Rendered -->
+                </tbody>
+              </table>
+              <div id="noFilesMsg" style="padding: 30px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                No PDF files uploaded yet. Drag and drop or click '+ Upload PDFs'.
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Required Documents -->
+          <div class="card table-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                </svg>
+                <span data-i18n="requiredDocs.title">Required Documents</span>
+                <span style="color: var(--text-muted); font-size: 13px;" id="reqCountText">(7)</span>
+              </div>
+              <div class="panel-actions">
+                <div class="status-filters">
+                  <span class="filter-pill ok" id="filterCountOk">✓ OK 0</span>
+                  <span class="filter-pill missing" id="filterCountMissing">! Missing 0</span>
+                  <span class="filter-pill expiry" id="filterCountExpiry">! Expiry 0</span>
+                  <span class="filter-pill optional" id="filterCountOptional">ℹ Optional 0</span>
+                </div>
+                <button class="btn-sm-outline" id="btnSortOrder" title="Sort by Order" data-i18n="requiredDocs.sortByOrder">⇅ Sort by Order</button>
+              </div>
+            </div>
+
+            <!-- Required Documents Table -->
+            <div style="overflow-x: auto; flex: 1;">
+              <table class="custom-table" id="requiredDocsTable">
+                <thead>
+                  <tr>
+                    <th style="width: 30px;" data-i18n="requiredDocs.colNum">#</th>
+                    <th data-i18n="requiredDocs.colDoc">Document</th>
+                    <th data-i18n="requiredDocs.colMatched">File Matched</th>
+                    <th data-i18n="requiredDocs.colExpiry">Expiry Date</th>
+                    <th data-i18n="requiredDocs.colStatus">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="requiredDocsBody">
+                  <!-- Dynamically Rendered -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- 3. RIGHT SIDEBAR: LIVE PREVIEW & READINESS -->
+    <aside class="right-sidebar">
+      <!-- Live Preview Header -->
+      <div>
+        <div class="section-head">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span data-i18n="preview.title">Live Preview</span>
+          </h3>
+          <span class="page-indicator" id="previewPageIndicator">Page 1 of 1</span>
+        </div>
+
+        <!-- Live Preview Canvas Frame -->
+        <div class="preview-card">
+          <div class="preview-sheet-frame" id="previewCoverSheet">
+            <!-- Dynamic Mini Cover Layout -->
+            <div style="border-bottom: 2px solid #2563eb; padding-bottom: 5px;">
+              <div style="font-weight: 800; font-size: 8px; color: #1e3a8a; text-align: center;">TENDER DOCUMENT PACKAGE</div>
+              <div style="font-weight: 700; font-size: 9px; color: #2563eb; text-align: center; margin-top: 2px;" id="prevTenderId">T-2026-0417</div>
+              <div style="font-size: 6.5px; color: #64748b; text-align: center;" id="prevTenderTitle">Supply of IT Equipment</div>
+            </div>
+
+            <div style="margin-top: 6px; font-size: 6px; line-height: 1.4;">
+              <div><strong>Procuring Entity:</strong> <span id="prevProcEntity">Example Directorate</span></div>
+              <div><strong>Bidder:</strong> <span id="prevBidder">Example Company Ltd.</span></div>
+              <div><strong>Deadline:</strong> <span id="prevDeadline">2026-10-20</span></div>
+            </div>
+
+            <div style="margin-top: 6px; flex: 1;">
+              <div style="font-weight: 700; font-size: 6.5px; border-bottom: 0.5px solid #cbd5e1; padding-bottom: 2px;">Included Documents:</div>
+              <div id="prevIncludedDocsList" style="margin-top: 3px; font-size: 5.5px; line-height: 1.5;">
+                <!-- Included list items -->
+              </div>
+            </div>
+
+            <div style="border-top: 0.5px solid #cbd5e1; padding-top: 4px; font-size: 5.5px; text-align: center; color: #64748b;" id="prevFooterText">
+              T-2026-0417 | Page 1 of 1
+            </div>
+          </div>
+
+          <!-- Preview Navigation Controls -->
+          <div class="preview-controls">
+            <button class="preview-nav-btn" id="btnPrevPage">◀</button>
+            <span style="font-size: 11px; font-weight: 600;" id="previewNavPageNum">1 / 1</span>
+            <button class="preview-nav-btn" id="btnNextPage">▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Package Readiness Card -->
+      <div class="readiness-card">
+        <div class="gauge-flex">
+          <div class="donut-gauge" id="donutGauge" style="--percent: 0;">
+            <div class="donut-inner" id="donutPercentText">0%</div>
+          </div>
+          <div class="readiness-text">
+            <h4 data-i18n="readiness.title">Package Readiness</h4>
+            <p id="readinessSummaryText">0 of 6 required documents ready</p>
+          </div>
+        </div>
+
+        <div class="readiness-list">
+          <div class="readiness-item">
+            <span><span style="color: var(--primary);">●</span> <span data-i18n="readiness.totalDocs">Total Documents</span></span>
+            <strong id="statTotalDocs">7</strong>
+          </div>
+          <div class="readiness-item">
+            <span><span style="color: var(--success);">✓</span> <span data-i18n="readiness.matched">Matched</span></span>
+            <strong id="statMatched">0</strong>
+          </div>
+          <div class="readiness-item">
+            <span><span style="color: var(--danger);">!</span> <span data-i18n="readiness.missingReq">Missing (Required)</span></span>
+            <strong id="statMissing">6</strong>
+          </div>
+          <div class="readiness-item">
+            <span><span style="color: var(--warning);">!</span> <span data-i18n="readiness.expired">Expired</span></span>
+            <strong id="statExpired">0</strong>
+          </div>
+          <div class="readiness-item">
+            <span><span style="color: var(--neutral);">ℹ</span> <span data-i18n="readiness.optNotProvided">Optional (Not provided)</span></span>
+            <strong id="statOptional">1</strong>
+          </div>
+        </div>
+
+        <!-- Big Generate PDF Package Action Button -->
+        <button class="btn-generate-package disabled" id="btnGeneratePackage">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+          </svg>
+          <span data-i18n="readiness.generateBtn">Generate PDF Package</span>
+        </button>
+        <p class="generate-helper-text" id="generateHelperText" data-i18n="readiness.fixIssues">Fix all blocking issues to enable</p>
+
+        <!-- Blocking reasons box shown when issues exist -->
+        <div class="blocking-box" id="blockingBox" style="display: none;">
+          <strong data-i18n="readiness.blockingTitle">Blocking Issues Detected:</strong>
+          <ul id="blockingReasonsList"></ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Hidden File Pickers -->
+  <input type="file" id="pdfFileInput" accept="application/pdf,.pdf" multiple style="display: none;">
+  <input type="file" id="reqFileInput" accept="application/json,.json" style="display: none;">
+  <input type="file" id="sealFileInput" accept="image/png,.png" style="display: none;">
+
+  <!-- Modal: Edit / View requirements.json -->
+  <div class="modal-overlay" id="jsonModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Edit / View requirements.json</h3>
+        <button class="action-icon-btn" id="btnCloseJsonModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="jsonEditorText" style="width: 100%; height: 320px; font-family: monospace; font-size: 12px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--neutral-bg); color: var(--text-main);"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-sm-outline" id="btnCancelJson">Cancel</button>
+        <button class="btn-sm-primary" id="btnSaveJson">Apply JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings & Bonus Features -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Contest Tools & Bonus Features</h3>
+        <button class="action-icon-btn" id="btnCloseSettingsModal">✕</button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="background: var(--neutral-bg); padding: 14px; border-radius: var(--radius-md);">
+          <h4>⚡ Auto-Match Documents</h4>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Automatically matches uploaded PDFs to required documents based on file name similarities.</p>
+          <button class="btn-sm-primary" id="btnAutoMatch">Run Auto-Match</button>
+        </div>
+
+        <div style="background: var(--neutral-bg); padding: 14px; border-radius: var(--radius-md);">
+          <h4>📊 Export Verification Checklist (CSV)</h4>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Downloads a complete checklist of documents, matched files, expiry dates, and statuses (UTF-8 BOM).</p>
+          <button class="btn-sm-outline" id="btnExportCsv">Export CSV</button>
+        </div>
+
+        <div style="background: var(--neutral-bg); padding: 14px; border-radius: var(--radius-md);">
+          <h4>🔖 Table of Contents / Index Page</h4>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+            <input type="checkbox" id="checkIncludeIndex"> Include Page 2 Index / Table of Contents in generated PDF
+          </label>
+        </div>
+
+        <div style="background: var(--neutral-bg); padding: 14px; border-radius: var(--radius-md);">
+          <h4>🖋️ Seal / Signature Image (PNG)</h4>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Upload an official PNG stamp to place on document final pages.</p>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button class="btn-sm-outline" id="btnUploadSeal">Upload Seal PNG</button>
+            <span id="sealStatusText" style="font-size: 12px; color: var(--text-muted);">No seal uploaded</span>
+          </div>
+        </div>
+
+        <div style="background: var(--neutral-bg); padding: 14px; border-radius: var(--radius-md);">
+          <h4>💾 Save & Reopen Work</h4>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Persist current matches and expiry dates in browser local storage.</p>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-sm-outline" id="btnSaveStorage">Save to LocalStorage</button>
+            <button class="btn-sm-outline" id="btnLoadStorage">Restore from LocalStorage</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-sm-primary" id="btnCloseSettingsModalBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

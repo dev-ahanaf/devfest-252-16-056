@@ -5,3 +5,7 @@ dist/
 .env
 .env.*
 .vercel
+Rules_Book/
+"Rules_Book /"
+"*.png"
+!screenshots/*.png

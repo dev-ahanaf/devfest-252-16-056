@@ -1,0 +1,23 @@
+{
+  "name": "devfest-252-16-056",
+  "version": "1.0.0",
+  "description": "Tender Document Package Builder - AI DevFest 2026",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dev-ahanaf/devfest-252-16-056.git"
+  },
+  "author": "Fayek Ahanaf",
+  "license": "MIT",
+  "dependencies": {
+    "pdf-lib": "^1.17.9"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0"
+  }
+}
